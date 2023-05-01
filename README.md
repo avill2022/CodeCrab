@@ -1,6 +1,6 @@
 # CodeCrab
 
-![Icono](https://user-images.githubusercontent.com/105819329/235386665-2e9905a6-0bab-4b15-b04b-6eb1c24a1b3b.png)
+![Icono](https://user-images.githubusercontent.com/105819329/235386911-9cc85c8c-1ade-47e5-be95-2417d3a90e4c.png)
 
 The project is called **Project Visualize**. It allows you to visualize the code of a programming project and show their connections graphically in a canvas.
 
