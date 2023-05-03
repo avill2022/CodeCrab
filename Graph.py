@@ -12,6 +12,28 @@ def getTypeColor(type):
     if(type == "object"):
         return "red"
 
+class FParameter:
+    def __init__(self,declaration, name, type, value, comment):
+        self.declaration_type = declaration
+        self.parameter_name = name
+        self.parameter_type = type
+        self.parameter_value = value
+        self.parameter_comment = comment
+    def show(self):
+        a = ""
+        b=""
+        c=""
+        d=""
+        if(self.parameter_type):
+            b = f": {self.parameter_type}" 
+        if(self.parameter_value):
+            c = f"= {self.parameter_value}" 
+        if(self.parameter_comment):
+            d = f"// {self.parameter_comment}" 
+        return f"{self.declaration_type} {self.parameter_name} {a}  {b}  {c}"
+        
+
+
 class FFunction:
     def __init__(self,typeF,name,parameters,returns,content):
         self.type=typeF
@@ -33,7 +55,6 @@ class FFunction:
         self.rect = canvas.create_rectangle(x, y, x + width, y + height, fill='white', outline='black')
         canvas.create_text(x + width/2, y + height/2, text=self.name)
 
-
 class FClass:
     def __init__(self,typeF,name,constructor_parameters,extends,content):
         self.type=typeF
@@ -42,11 +63,32 @@ class FClass:
         self.color = getTypeColor(typeF)
         self.constructor_parameters = constructor_parameters
         self.FFunctions=[]
+        self.FParameters=[]
+        self.FClasses=[] #
         self.extends = extends
         self.radius=50
         self.x=25
         self.y=25
-        
+
+    def scanningParameters(self):
+        if self.constructor_parameters:
+            for s in self.constructor_parameters.split(','):
+                match = s.split()
+                p1=""
+                p2=""
+                p3=""
+                p4=""
+                p5=""
+                p1 = match[0] if match[0] else ""
+                p2 = match[1] if match[1] else ""
+                if len(match)>2:
+                    p3 = match[2] if match[2] else ""
+                if len(match)>3:
+                    p4 = match[3] if match[3] else ""
+                if len(match)>4:
+                    p5 = match[4] if match[4] else ""
+                self.FParameters.append(FParameter(p1,p2.replace(':',''),p3.replace(':',''),p4,p5))
+                
     def show(self):
         if self.constructor_parameters and self.extends:
             return(self.type+" " + self.name+" (" + self.constructor_parameters+")"+" : " + self.extends)
@@ -59,7 +101,6 @@ class FClass:
     def draw(self, canvas, x, y, width, height):
         self.rect = canvas.create_rectangle(x, y, x + width, y + height, fill='white', outline='black')
         canvas.create_text(x + width/2, y + height/2, text=self.name)
-
 
 class FileNode:
     def __init__(self, name):

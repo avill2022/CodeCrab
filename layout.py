@@ -81,7 +81,15 @@ class Layout(tkinter.Frame):
                     if file.name == self.selected:
                         self.setTextLayout(self.display_box,file.content) 
                         break
-                    for fc  in file.FileClasses:
+                    for fc  in file.FObjects:
+                        if fc.name == self.selected:
+                            self.setTextLayout(self.display_box,fc.show()+fc.content)   
+                            break  
+                        for ff  in fc.FFunctions:
+                            if ff.name == self.selected:
+                                self.setTextLayout(self.display_box,ff.show()+ff.content)   
+                                break 
+                    for fc  in file.FClasses:
                         if fc.name == self.selected:
                             self.setTextLayout(self.display_box,fc.show()+fc.content)   
                             break  
@@ -148,6 +156,50 @@ class Layout(tkinter.Frame):
     def set_graph(self,graph):
         self.graph=graph   
     
+    def drawClass(self,canvas,classes,file,iterator,x,y):
+        for fc  in classes:
+            canvas.addtag_withtag(file.name,
+                               canvas.create_rectangle(x+5, 
+                                y+13+15*iterator, 
+                                x+105, 
+                                y+13+15+15*iterator+15*len(fc.FClasses)
+                                            +15*len(fc.FParameters)
+                                            +15*len(fc.FFunctions),
+                                fill=fc.color, 
+                                outline='black')
+                            )
+            canvas.addtag_withtag(
+                                file.name,self.add_text(x+7, 
+                                y+13+15*iterator, 
+                                text=fc.show(),
+                                tag=fc.name)
+                            )
+            iterator+=1
+            param = 10
+            #print the parameters
+            for fp  in fc.FParameters:
+                canvas.addtag_withtag(file.name,canvas.create_rectangle(x+5+param, 
+                                y+13+15*iterator, 
+                                x+105+param, 
+                                y+13+15+15*iterator,
+                        fill="orange", outline='black'))
+                canvas.addtag_withtag(file.name,self.add_text(x+7+param, 
+                                y+13+15*iterator, text=fp.show(),tag=fp.parameter_name))
+                iterator+=1
+            #iterator = self.drawClass(canvas,fc.FClasses,file,iterator,x,y)
+            param = 10
+            #print the functions
+            for ff in fc.FFunctions:
+                canvas.addtag_withtag(file.name,canvas.create_rectangle(x+5+param, 
+                                y+13+15*iterator, 
+                                x+105+param, 
+                                y+13+15+15*iterator,
+                        fill="#000fff000", outline='black'))
+                canvas.addtag_withtag(file.name,self.add_text(x+7+param, 
+                                y+13+15*iterator, text=ff.show(),tag=ff.name))
+                iterator+=1
+        return iterator
+
     def draw_project(self):
         # Clear the canvas
         self.canvas.delete("all")
@@ -204,48 +256,12 @@ class Layout(tkinter.Frame):
                 self.canvas.addtag_withtag(file.name, titleFile)
                 self.canvas.addtag_withtag(file.name, back_titleFile)
                 
-                #self.canvas.tag_bind(t, "<Button-1>", lambda event: show_message_box(file.name))
-                #class files
+                ###
                 iterator=0
-                for fc  in file.FileClasses:
-                    self.canvas.addtag_withtag(file.name,
-                                        self.canvas.create_rectangle(x+5, 
-                                        y+13+15*iterator, 
-                                        x+105, 
-                                        y+13+15+15*iterator,
-                                        fill=fc.color, 
-                                        outline='black')
-                                    )
-                    self.canvas.addtag_withtag(
-                                        file.name,self.add_text(x+7, 
-                                        y+13+15*iterator, 
-                                        text=fc.show(),
-                                        tag=fc.name)
-                                    )
-                    iterator+=1
-                    #print the functions
-                    for ff in fc.FFunctions:
-                        self.canvas.addtag_withtag(file.name,self.canvas.create_rectangle(x+5, 
-                                        y+13+15*iterator, 
-                                        x+105, 
-                                        y+13+15+15*iterator,
-                                fill="red", outline='black'))
-                        self.canvas.addtag_withtag(file.name,self.add_text(x+7, 
-                                        y+13+15*iterator, text=ff.show(),tag=ff.name))
-                        iterator+=1
-                    #print the objects
-                
-                '''
-                
-                for fc  in file.FileFunctions:
-                    self.canvas.addtag_withtag(file.name,self.canvas.create_rectangle(x+5, 
-                                        y+13+15*iterator, 
-                                        x+105, 
-                                        y+13+15+15*iterator,
-                                fill="red", outline='black'))
-                    self.canvas.addtag_withtag(file.name,self.add_text(x+7, 
-                                        y+13+15*iterator, text=fc.show(),tag=fc.name))
-                    iterator+=1'''
+            iterator = self.drawClass(self.canvas,file.FClasses,file,iterator,x,y)
+            iterator = self.drawClass(self.canvas,file.FObjects,file,iterator,x,y)
+            
+            
             # Draw relations as lines
             for relation in self.graph.get_relations():
                 file1 = relation.file1

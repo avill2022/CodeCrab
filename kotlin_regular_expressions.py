@@ -29,7 +29,6 @@ def createFunctionKotlin(fun_name,fun_parameters,returns,kotlin_code):
         if content:
             return gr.FFunction("fun ",fun_name,fun_parameters,returns,content)
 
-
 def getFunctionsKotlin(kotlin_code):
     FFunctions = []
     #function parameters return
@@ -78,94 +77,123 @@ def getFunctionsKotlin(kotlin_code):
         FileObjects.append(gr.FileClass("data class",match[0],match[1],match[2]))'''
     return FileObjects
 
-def createClassKotlin(class_name,constructor_parameters,extends,kotlin_code):
-    function_pattern = r'\bclass\s+{}([\s\S]*)'.format(class_name)
+def createClassKotlin(name,class_name,constructor_parameters,extends,kotlin_code):
+    function_pattern = r'\b'+name+' '+class_name+'([\s\S]*)'
+
     match = re.search(function_pattern, kotlin_code)
     if match:
         content = match.group(1)
         content = capture_parentheses(content)
         if content:
-            return gr.FClass("class",class_name,constructor_parameters,extends,content)
+            return gr.FClass(name,class_name,constructor_parameters,extends,content)
 
-def getClassesKotlin(kotlin_code):
+def getClassesKotlin(name,kotlin_code):
     FileClasses = []
     #class parameters extend
-    class_pattern = r'\bclass\s+(\w+)\s*\((.*?)\)\s*(?:\:(.*?))?\s*\{'
+    class_pattern = r'\b'+name+'\s+(\w+)\s*\((.*?)\)\s*(?:\:(.*?))?\s*\{'
     class_matches = re.findall(class_pattern, kotlin_code)
     for match in class_matches:
         class_name = match[0]
         constructor_parameters = match[1]
         extends = match[2]
-        fileClass = createClassKotlin(class_name,constructor_parameters,extends,kotlin_code)
+        fileClass = createClassKotlin(name,class_name,constructor_parameters,extends,kotlin_code)
         if fileClass:
-            functions = getFunctionsKotlin(kotlin_code=fileClass.content)
-            fileClass.FFunctions = functions
-            for f in fileClass.FFunctions:
-                print(f.show())
+            fileClass.FFunctions = getFunctionsKotlin(kotlin_code=fileClass.content)
+            fileClass.FParameters = getParametersKotlin(kotlin_code=fileClass.content)
+            ##fileClass.FClasses=getClassesKotlin("class",kotlin_code=fileClass.content)
+            fileClass.scanningParameters()
             FileClasses.append(fileClass)
 
     #class parameters
-    class_pattern = r'\bclass\s+(\w+)\s*\((.*?)\)\s*\{'
+    class_pattern = r'\b'+name+'\s+(\w+)\s*\((.*?)\)\s*\{'
     class_matches = re.findall(class_pattern, kotlin_code)
     for match in class_matches:
         class_name = match[0]
         constructor_parameters = match[1]
         fileClass = createClassKotlin(class_name,constructor_parameters,"",kotlin_code)
         if fileClass:
-            functions = getFunctionsKotlin(kotlin_code=fileClass.content)
-            fileClass.FFunctions = functions
-            for f in fileClass.FFunctions:
-                print(f.show())
+            fileClass.FFunctions = getFunctionsKotlin(kotlin_code=fileClass.content)
+            fileClass.FParameters = getParametersKotlin(kotlin_code=fileClass.content)
+           ## fileClass.FClasses=getClassesKotlin("class",kotlin_code=fileClass.content)
+            fileClass.scanningParameters()
             FileClasses.append(fileClass)
-
     #class extend
-    class_pattern = r'\bclass\s+(\w+)\s*:\s*(.*?)\s*\{'
+    class_pattern = r'\b'+name+'\s+(\w+)\s*:\s*(.*?)\s*\{'
     class_matches = re.findall(class_pattern, kotlin_code)
     for match in class_matches:
         class_name = match[0]
         extends = match[1]
-        fileClass = createClassKotlin(class_name,"",extends,kotlin_code)
+        fileClass = createClassKotlin(name,class_name,"",extends,kotlin_code)
         if fileClass:
-            functions = getFunctionsKotlin(kotlin_code=fileClass.content)
-            fileClass.FFunctions = functions
-            for f in fileClass.FFunctions:
-                print(f.show())
+            fileClass.FFunctions = getFunctionsKotlin(kotlin_code=fileClass.content)
+            fileClass.FParameters = getParametersKotlin(kotlin_code=fileClass.content)
+           ## fileClass.FClasses=getClassesKotlin("class",kotlin_code=fileClass.content)
+            fileClass.scanningParameters()
             FileClasses.append(fileClass)
 
     #class ()
-    class_pattern = r'\bclass\s+(\w+)\s*\(\)\s*\{'
+    class_pattern = r'\b'+name+'\s+(\w+)\s*\(\)\s*\{'
     class_matches = re.findall(class_pattern, kotlin_code)
     for match in class_matches:
         class_name = match
-        fileClass = createClassKotlin(class_name,"()","",kotlin_code)
+        fileClass = createClassKotlin(name,class_name,"()","",kotlin_code)
         if fileClass:
-            functions = getFunctionsKotlin(kotlin_code=fileClass.content)
-            fileClass.FFunctions = functions
-            for f in fileClass.FFunctions:
-                print(f.show())
+            fileClass.FFunctions = getFunctionsKotlin(kotlin_code=fileClass.content)
+            fileClass.FParameters = getParametersKotlin(kotlin_code=fileClass.content)
+           ## fileClass.FClasses=getClassesKotlin("class",kotlin_code=fileClass.content)
+            fileClass.scanningParameters()
             FileClasses.append(fileClass)
 
     #class
-    class_pattern = r'\bclass\s+(\w+)\s*\{'
+    class_pattern = r'\b'+name+'\s+(\w+)\s*\{'
     class_matches = re.findall(class_pattern, kotlin_code)
     for match in class_matches:
         class_name = match
-        fileClass = createClassKotlin(class_name,"","",kotlin_code)
+        fileClass = createClassKotlin(name,class_name,"","",kotlin_code)
         if fileClass:
-            functions = getFunctionsKotlin(kotlin_code=fileClass.content)
-            fileClass.FFunctions = functions
-            for f in fileClass.FFunctions:
-                print(f.show())
+            fileClass.FFunctions = getFunctionsKotlin(kotlin_code=fileClass.content)
+            fileClass.FParameters = getParametersKotlin(kotlin_code=fileClass.content)
+           ## fileClass.FClasses=getClassesKotlin("class",kotlin_code=fileClass.content)
+            fileClass.scanningParameters()
             FileClasses.append(fileClass)
+            #for f in fileClass.FFunctions:
+                #print(f.show())
 
     return FileClasses
+
+def getParametersKotlin(kotlin_code):
+    FileParameters = []
+    #pattern = r'var\s+.*$'
+    pattern = r'(val|var)\s+(\w+)\s*:\s*(\w+)\s*=\s*([^/\n]+)\s*(//\s*(.*))?'
+    matches = re.findall(pattern, kotlin_code)
+    #match = re.search(pattern, kotlin_code)
+    for match in matches:
+        declaration_type = match[0]
+        parameter_name = match[1]
+        parameter_type = match[2]
+        parameter_value = match[3]
+        parameter_comment = match[5] if match[5] else ""
+        fileParameter =  gr.FParameter(declaration_type,parameter_name,parameter_type,parameter_value,parameter_comment)
+        FileParameters.append(fileParameter)
+        '''function_pattern = r'\b(val)\s+{}([\s\S]*)'.format(parameter_name)
+        match = re.search(function_pattern, kotlin_code)
+        if match:
+            content = match.group(1)
+            print(content)'''
+    return FileParameters
+    #var count
+    #val name: String = "John Doe"
+    #val name: Int = 8 //asdfasfsadfd
+    #var count: String
+    #var count = 0
 #main function#
 def kotlinRegularExpressions(file_contents,file_name):
     file_node = gr.FileNode(file_name)
     file_node.content = file_contents
+    file_node.FClasses=getClassesKotlin("class",kotlin_code=file_contents)
+    file_node.FObjects=getClassesKotlin("object",kotlin_code=file_contents)
+    file_node.FInterfaces=getClassesKotlin("interface",kotlin_code=file_contents)
     #file_node.FileObjects=getObjects(kotlin_code=file_contents)
-    file_node.FileClasses=getClassesKotlin(kotlin_code=file_contents)
-    #file_node.show()
     return file_node
 
 
